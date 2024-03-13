@@ -6,25 +6,29 @@
 #include <fstream>
 #include <cmath>
 #include <cstdio>
+#include <iomanip>
+
+// Define current as a global variable
+float Iext = 0.1 / (7.854 * pow(10, -3));
 
 // Define the Hodkin-Huxley differential equations
 void hh(float t, float V, float m, float h, float n, float & alpha_m, float & beta_m, float & alpha_h, float & beta_h, float & alpha_n, float & beta_n, float & dVdt, float & dmdt, float & dhdt, float & dndt){
-	const float Cm = 1, VNa = 50.0, VK = -77.0, VL = -54.387, gNa = 120.0, gK = 36.0, gL = 0.3, /*Iext = 0.0*/ Iext = 0.1 / (7.854 * pow(10, -3));
-	alpha_m = (0.1 * (-V - 40)) / (exp((-V - 40) / 10) - 1);
-	beta_m =  4 * exp((-V - 65) / 18);
-	alpha_h = 0.07 * exp((-V - 65) / 18);
-	beta_h = 1 / (exp((-V - 35) / 10) + 1);
-	alpha_n = (0.01 * (-V - 55)) / (exp((-V - 55) / 10) -1);
-	beta_n = 0.125 * exp((-V - 65) / 80); 
-	dVdt = (1 / Cm) * (Iext - gL * (V - VL) - gNa * pow(m, 3) * h * (V - VNa) - gK * pow(n, 4) * (V - VK));
-	dmdt = alpha_m * (1 - m) - beta_m * m;
-	dhdt = alpha_h * (1 - h) - beta_h * h;
-	dndt = alpha_n * (1 - n) - beta_n * n;}
+	const float Cm = 1.0, VNa = 50.0, VK = -77.0, VL = -54.387, gNa = 120.0, gK = 36.0, gL = 0.3;
+	alpha_m = (0.1 * (-V - 40.)) / (exp((-V - 40.) / 10.) - 1.);
+	beta_m =  4. * exp((-V - 65.) / 18.);
+	alpha_h = 0.07 * exp((-V - 65.) / 18.);
+	beta_h = 1. / (exp((-V - 35.) / 10.) + 1.);
+	alpha_n = (0.01 * (-V - 55.)) / (exp((-V - 55.) / 10.) -1.);
+	beta_n = 0.125 * exp((-V - 65.) / 80.); 
+	dVdt = (1. / Cm) * (Iext - gL * (V - VL) - gNa * m * m * m * h * (V - VNa) - gK * n * n * n * n * (V - VK));
+	dmdt = (alpha_m * (1 - m)) - (beta_m * m);
+	dhdt = (alpha_h * (1 - h)) - (beta_h * h);
+	dndt = (alpha_n * (1 - n)) - (beta_n * n);}
 
 int main(void){
 
 	// Define initial conditions
-	float V = -65;
+	float V = -65.0;
 	float m = 0.053;
 	float h = 0.6;
 	float n = 0.318;
@@ -37,11 +41,17 @@ int main(void){
 	std::ofstream outputFile2("hhDataTwo.txt"); // m, h, n against t
 	
 	// Time integration loop using Euler's method
-	for(float t = 0; t <= 50; t += dt){
+	for(float t = 0; t <= 100; t += dt){
 		
+		if ( t <= 50) Iext = 0.1 / (7.854 * pow(10, -3)); //0;
 		// Output solutions for the file
-		outputFile1 << t << "\t" << V << "\t" << std::endl;
-		outputFile2 << t << "\t" << m << "\t" << h << "\t" << n << "\t" << std::endl;
+		outputFile1 << t << "\t" << std::fixed << std::setprecision(4) << V << std::endl;
+		outputFile2 << t << "\t" << m << "\t" << h << "\t" << n << std::endl;
+		
+		if ( t > 50) Iext = 0;
+		// Output solutions for the file
+		outputFile1 << t << "\t" << std::fixed << std::setprecision(4) << V << std::endl;
+		outputFile2 << t << "\t" << m << "\t" << h << "\t" << n << std::endl;
 		
 		// Calculate the derivatives
 		float alpha_m, beta_m, alpha_h, beta_h, alpha_n, beta_n, dVdt, dmdt, dhdt, dndt;
